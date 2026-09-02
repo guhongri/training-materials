@@ -561,7 +561,7 @@ save('test03_processed.mat', ...
     function show(i){ current=Math.max(0,Math.min(slides.length-1,i)); slides.forEach((s,n)=>s.classList.toggle('active',n===current)); document.getElementById('progressBar').style.width=((current+1)/slides.length*100)+'%'; history.replaceState(null,'','#slide-'+(current+1)); }
     document.getElementById('prev').onclick=()=>show(current-1); document.getElementById('next').onclick=()=>show(current+1);
     const zoomControl=document.getElementById('zoomControl'),zoomToggle=document.getElementById('zoomToggle'),zoomPanel=document.getElementById('zoomPanel'),zoomValue=document.getElementById('zoomValue'),zoomOut=document.getElementById('zoomOut'),zoomIn=document.getElementById('zoomIn');
-    const minZoom=.9,maxZoom=1.2,zoomStep=.1; let slideZoom=1;
+    const minZoom=.5,maxZoom=2,zoomStep=.1; let slideZoom=1;
     try { slideZoom=Number(localStorage.getItem('experimentDeckZoom'))||1; } catch(e) {}
     function applyZoom(value){ slideZoom=Math.max(minZoom,Math.min(maxZoom,Math.round(value*10)/10)); document.documentElement.style.setProperty('--slide-zoom',slideZoom); document.documentElement.style.setProperty('--slide-zoom-inverse',1/slideZoom); zoomValue.textContent=Math.round(slideZoom*100)+'%'; zoomOut.disabled=slideZoom<=minZoom; zoomIn.disabled=slideZoom>=maxZoom; try { localStorage.setItem('experimentDeckZoom',slideZoom); } catch(e) {} }
     function setZoomPanel(open){ zoomPanel.classList.toggle('open',open); zoomToggle.setAttribute('aria-expanded',String(open)); }
