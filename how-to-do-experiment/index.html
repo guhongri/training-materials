@@ -1,0 +1,546 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rigorous Experimental Practice</title>
+  <script>
+    window.MathJax = { tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] }, svg: { fontCache: 'global' } };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+  <style>
+    :root { --paper:#ede8e0; --paper-2:#e2dbd1; --ink:#1b252b; --muted:#59646a; --accent:#2b7774; --warm:#9b5b40; --line:#b8b0a4; --navy:#183448; }
+    * { box-sizing:border-box; }
+    html, body { margin:0; width:100%; height:100%; overflow:hidden; background:#25292b; color:var(--ink); font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    .presentation { width:100vw; height:100vh; position:relative; }
+    .slide { position:absolute; inset:0; display:none; width:100vw; height:100vh; padding:3.2vh 4.8vw 3.6vh; background:var(--paper); overflow:hidden; }
+    .slide.active { display:flex; flex-direction:column; }
+    .slide::after { content:""; position:absolute; width:30vw; height:30vw; right:-13vw; top:-15vw; border:1px solid rgba(184,176,164,.55); border-radius:50%; pointer-events:none; }
+    .axis { position:absolute; opacity:.26; background:var(--line); pointer-events:none; }
+    .axis-x { left:0; right:0; top:14.4vh; height:1px; }
+    .axis-y { top:0; bottom:0; left:3.2vw; width:1px; }
+    header { flex:0 0 auto; min-height:12vh; position:relative; z-index:2; }
+    .eyebrow { color:var(--accent); text-transform:uppercase; letter-spacing:.17em; font-size:clamp(9px,.78vw,12px); font-weight:700; margin-bottom:.8vh; }
+    h1,h2,h3 { font-family:Georgia, "Times New Roman", serif; font-weight:500; color:var(--navy); }
+    h1 { margin:0; font-size:clamp(25px,2.7vw,42px); line-height:1.05; max-width:94%; }
+    .slide-body h2 { break-after:avoid; break-inside:avoid; margin:1.25vh 0 .55vh; padding-left:.72vw; border-left:4px solid var(--accent); font-family:Georgia, "Times New Roman", serif; font-size:clamp(17px,1.45vw,23px); line-height:1.15; color:var(--navy); }
+    .slide-body h2.stage-heading { font-size:21px; line-height:1.15; font-weight:500; }
+    h3 { break-after:avoid; break-inside:avoid; margin:1.15vh 0 .45vh; font-family:Inter, sans-serif; font-size:clamp(11px,1vw,15px); line-height:1.25; color:var(--accent); text-transform:uppercase; letter-spacing:.06em; border-bottom:1px solid var(--line); padding-bottom:.35vh; }
+    .slide-body { flex:1; min-height:0; position:relative; z-index:1; padding-top:1.6vh; padding-right:1.8vw; overflow:hidden; font-size:clamp(11px,1.03vw,16px); line-height:1.32; }
+    .slide-body.columns { column-count:2; column-gap:4vw; column-rule:1px solid rgba(184,176,164,.7); }
+    .slide-body.dense { font-size:clamp(10px,.91vw,14px); line-height:1.25; }
+    .slide-body.designed { display:flex; flex-direction:column; gap:1.25vh; padding-top:1.2vh; font-size:clamp(10.5px,.9vw,14px); }
+    p { margin:.45vh 0 .72vh; color:var(--muted); }
+    strong { color:var(--ink); }
+    ul,ol { margin:.45vh 0 .9vh; padding-left:1.35rem; break-inside:avoid; }
+    li { margin:.25vh 0; padding-left:.18rem; color:#303a40; }
+    blockquote { break-inside:avoid; margin:1.1vh 0; padding:1vh 1.2vw; border-left:4px solid var(--accent); background:rgba(255,255,255,.35); color:var(--navy); }
+    table { width:100%; border-collapse:collapse; margin:1vh 0; break-inside:avoid; background:rgba(255,255,255,.28); }
+    th,td { border:1px solid var(--line); padding:.55vh .6vw; text-align:left; vertical-align:top; }
+    th { background:var(--navy); color:#fff; font-weight:600; }
+    pre { break-inside:avoid; white-space:pre-wrap; margin:.75vh 0 1vh; padding:1.05vh 1vw; border-radius:4px; background:var(--navy); color:#eef6f5; border-left:5px solid var(--accent); font:clamp(10px,.86vw,13px)/1.3 "SFMono-Regular",Consolas,monospace; }
+    code { font-family:"SFMono-Regular",Consolas,monospace; }
+    .math-block { break-inside:avoid; margin:.65vh 0; padding:.55vh .7vw; color:var(--navy); background:rgba(255,255,255,.3); text-align:center; }
+    .math-inline { white-space:nowrap; color:var(--navy); }
+    .question-label { break-after:avoid; margin:.6vh 0 .15vh .9vw; color:var(--warm); font-size:clamp(9px,.72vw,11px); font-weight:700; text-transform:uppercase; letter-spacing:.14em; }
+    .question-text { break-inside:avoid; margin:0 0 .65vh .9vw; color:var(--warm); font-family:Georgia, "Times New Roman", serif; font-size:clamp(17px,1.42vw,23px); line-height:1.15; font-style:italic; }
+    .stage-layout { display:flex; flex-direction:column; padding-top:1.1vh; }
+    .stage-intro { margin:0 0 1.35vh; color:var(--muted); font-size:clamp(12px,1vw,15px); }
+    .stages-grid { flex:1; min-height:0; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1.7vw; }
+    .stage-card { position:relative; display:flex; flex-direction:column; min-width:0; padding:2.1vh 1.55vw 1.65vh; border:1px solid var(--line); background:rgba(255,255,255,.32); }
+    .stage-card::before { content:""; position:absolute; left:0; top:0; right:0; height:5px; background:var(--accent); }
+    .stage-publication::before { background:var(--navy); }
+    .stage-number { margin-bottom:.65vh; color:var(--accent); font:500 clamp(20px,1.8vw,27px)/1 Georgia,serif; }
+    .stage-publication .stage-number { color:var(--navy); }
+    .stage-card h2 { min-height:2.6em; margin:0 0 1.15vh !important; padding:0 !important; border:0 !important; font-size:21px !important; line-height:1.15 !important; }
+    .stage-card .question-label { margin:0 0 .35vh; }
+    .stage-card .question-text { min-height:2.7em; margin:0 0 1.25vh; font-size:clamp(16px,1.25vw,19px); }
+    .stage-summary { margin:0; font-size:clamp(11px,.88vw,13.5px); line-height:1.45; }
+    .requirements-label { margin:.15vh 0 .55vh; padding-top:.85vh; border-top:1px solid var(--line); color:var(--accent); font-size:clamp(9px,.7vw,11px); font-weight:700; text-transform:uppercase; letter-spacing:.1em; }
+    .stage-card ul { margin:.15vh 0 0; padding-left:1.1rem; }
+    .stage-card li { margin:.19vh 0; font-size:clamp(10.5px,.82vw,13px); line-height:1.28; }
+    .stage-bottom { margin-top:auto; padding-top:1vh; border-top:1px solid var(--line); color:var(--muted); font-size:clamp(10px,.78vw,12px); line-height:1.35; }
+    .stage-conclusion { margin:1.15vh 0 0; color:var(--navy); font-size:clamp(11px,.9vw,14px); font-weight:600; text-align:center; }
+    .grid-2 { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1.8vw; min-height:0; }
+    .full-height-grid { flex:1; }
+    .panel { min-width:0; padding:1.45vh 1.3vw; border:1px solid var(--line); background:rgba(255,255,255,.3); }
+    .panel-title { margin-bottom:.7vh; color:var(--accent); font-size:clamp(10px,.78vw,12px); font-weight:700; text-transform:uppercase; letter-spacing:.09em; }
+    .panel p { margin:.35vh 0 .65vh; font-size:clamp(10.5px,.88vw,13.5px); line-height:1.38; }
+    .accent-panel { border-top:5px solid var(--accent); }
+    .compact-list,.question-list { margin:.2vh 0; padding-left:1.05rem; }
+    .compact-list li,.question-list li { margin:.25vh 0; font-size:clamp(10.5px,.86vw,13.5px); line-height:1.28; }
+    .question-list li { margin:.7vh 0; }
+    .flow-row { display:flex; align-items:stretch; justify-content:center; gap:.7vw; width:100%; }
+    .flow-node { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; min-width:0; min-height:7.5vh; padding:1vh .7vw; border:1px solid var(--line); background:rgba(255,255,255,.34); color:var(--navy); text-align:center; font-size:clamp(10px,.85vw,13px); }
+    .flow-node b { font-size:clamp(12px,1vw,15px); }
+    .flow-node small { display:block; margin-top:.35vh; color:var(--muted); line-height:1.2; }
+    .flow-arrow,.file-arrow,.trace-arrow,.daq-arrow { display:flex; align-items:center; justify-content:center; flex:0 0 auto; color:var(--accent); font-size:clamp(18px,1.6vw,25px); font-weight:600; }
+    .hero-flow .flow-node { min-height:9.5vh; border-top:5px solid var(--accent); }
+    .architecture-grid { flex:1; }
+    .definition-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.55vh 1vw; margin-top:.7vh; }
+    .definition-grid span { padding:.45vh .55vw; background:rgba(255,255,255,.35); color:var(--muted); font-size:clamp(10px,.78vw,12px); }
+    .definition-grid b { color:var(--navy); }
+    .takeaway { flex:0 0 auto; padding:1.15vh 1.3vw; background:var(--navy); color:white; text-align:center; font-size:clamp(11px,.9vw,14px); font-weight:600; line-height:1.3; }
+    .mini-callout { margin-top:1.1vh; padding:1vh 1vw; border-left:4px solid var(--warm); background:rgba(155,91,64,.08); color:var(--ink); font-weight:600; line-height:1.35; }
+    .warning { padding:1.15vh 1.3vw; background:var(--warm); color:white; text-align:center; font-size:clamp(11px,.88vw,14px); line-height:1.3; }
+    .designed-table { width:100%; margin:0; font-size:clamp(10px,.82vw,13px); }
+    .designed-table th,.designed-table td { padding:.7vh .75vw; }
+    .lower-panels { flex:1; }
+    .spec-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.8vh .8vw; margin:1vh 0; }
+    .spec-grid div { padding:1.1vh .8vw; border:1px solid var(--line); background:rgba(255,255,255,.45); color:var(--navy); font-weight:600; text-align:center; }
+    .state-flow .flow-node { min-height:6.3vh; padding:.7vh .25vw; color:var(--navy); font-weight:700; }
+    .protocol-grid { flex:1; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:.75vh .75vw; }
+    .protocol-step { display:flex; align-items:center; gap:.7vw; min-width:0; padding:.65vh .7vw; border:1px solid var(--line); background:rgba(255,255,255,.26); line-height:1.2; }
+    .protocol-step span { color:var(--accent); font:600 14px Georgia,serif; }
+    .parameter-strip { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1vw; }
+    .parameter-strip>div { padding:.7vh .8vw; border:1px solid var(--line); background:rgba(255,255,255,.3); text-align:center; }
+    .parameter-strip>div>span { color:var(--accent); font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.09em; }
+    .compact-equation { padding:.2vh .3vw; background:transparent; }
+    .code-layout,.processing-layout { flex:1; }
+    .code-panel { min-height:0; height:100%; margin:0; padding:1.5vh 1.35vw; font-size:clamp(10px,.85vw,13px); line-height:1.35; }
+    .code-panel.tall { font-size:clamp(9.5px,.78vw,12px); }
+    .reproducibility-pair { flex:0 0 21vh; }
+    .repro-card { border-top:5px solid var(--accent); }
+    .big-statement { color:var(--navy); font:500 clamp(16px,1.35vw,21px)/1.15 Georgia,serif; margin:.5vh 0 .8vh; }
+    .metadata-grid { flex:1; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:.7vh .75vw; }
+    .metadata-grid div,.variation-grid div { display:flex; align-items:center; justify-content:center; padding:.65vh .5vw; border:1px solid var(--line); background:rgba(255,255,255,.27); text-align:center; }
+    .daq-layout { display:grid; grid-template-columns:2.25fr auto 1fr auto 1fr; gap:.8vw; align-items:stretch; min-height:27vh; }
+    .channel-stack { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.55vh .55vw; }
+    .channel { display:flex; justify-content:space-between; align-items:center; gap:.5vw; padding:.7vh .7vw; border:1px solid var(--line); background:rgba(255,255,255,.32); }
+    .channel b { color:var(--accent); }
+    .daq-core { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:1vh; background:var(--navy); color:white; text-align:center; }
+    .daq-core b { font:500 clamp(19px,1.7vw,27px) Georgia,serif; }
+    .daq-core span { margin-top:.6vh; color:#dce7e7; font-size:11px; }
+    .daq-core.matlab { background:var(--accent); }
+    .io-chips { display:flex; gap:.6vw; margin:.8vh 0; }
+    .io-chips span { flex:1; padding:.65vh .4vw; border:1px solid var(--accent); color:var(--accent); text-align:center; font-weight:700; }
+    .small-note { font-size:clamp(9.5px,.76vw,12px)!important; }
+    .measurement-flow .flow-node,.sync-flow .flow-node { min-height:8.3vh; }
+    .equation-layout,.sync-layout { flex:1; }
+    .inner-flow .flow-node { min-height:5.8vh; padding:.5vh .35vw; font-size:clamp(9px,.72vw,11px); }
+    .method-card { display:flex; flex-direction:column; gap:.75vh; }
+    .trigger-grid { flex:1; }
+    .drift-panel { display:grid; grid-template-columns:.8fr 1.7fr; gap:1.2vw; padding:1vh 1.1vw; border:1px solid var(--line); background:rgba(255,255,255,.3); }
+    .drift-panel p { margin:.2vh 0; }
+    .raw-definition { display:grid; grid-template-columns:.35fr 2.2fr; gap:1.3vw; align-items:center; padding:1.1vh 1vw; border-left:5px solid var(--accent); background:rgba(255,255,255,.32); }
+    .raw-definition b { font:500 clamp(18px,1.45vw,23px) Georgia,serif; }
+    .raw-flow .flow-node { min-height:10vh; }
+    .lock { color:var(--navy); }
+    .parameter-column { display:flex; flex-direction:column; gap:1.1vh; }
+    .parameter-line { display:flex; justify-content:space-between; padding:.75vh .7vw; border-bottom:1px solid var(--line); }
+    .parameter-line span { color:var(--accent); font-weight:600; }
+    .audit-text-panel { flex:1; padding:1.55vh 1.5vw; border-top:5px solid var(--accent); background:rgba(255,255,255,.3); }
+    .audit-text-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:2.5vw; margin-top:1vh; }
+    .audit-text-list .compact-list { margin:0; padding-left:1.15rem; }
+    .audit-text-list .compact-list li { margin:.85vh 0; font-size:clamp(12px,1vw,15px); line-height:1.3; }
+    .comparison-strip { display:grid; grid-template-columns:1fr auto 1.45fr; gap:1vw; align-items:center; padding:1vh 1vw; border:1px solid var(--line); }
+    .comparison-strip>div:not(.comparison-arrow) { display:flex; flex-direction:column; gap:.35vh; }
+    .bad,.good { width:max-content; padding:.25vh .45vw; color:white; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; }
+    .bad { background:var(--warm); }.good{background:var(--accent)}
+    .comparison-arrow { color:var(--accent); font-size:24px; }
+    .file-pipeline { display:grid; grid-template-columns:1.1fr auto 1fr auto 1.1fr auto 1fr auto .85fr; gap:.55vw; align-items:stretch; min-height:15vh; }
+    .file-node,.script-node { display:flex; flex-direction:column; align-items:center; justify-content:center; min-width:0; padding:1vh .55vw; border:1px solid var(--line); background:rgba(255,255,255,.42); text-align:center; }
+    .file-node span,.script-node span { color:var(--accent); font-size:9px; font-weight:700; letter-spacing:.09em; }
+    .file-node b,.script-node b { margin:.45vh 0; color:var(--navy); font:500 clamp(13px,1.1vw,17px) Georgia,serif; }
+    .file-node small,.script-node small { color:var(--muted); font-size:9.5px; line-height:1.2; }
+    .file-node.locked { border:2px solid var(--navy); }.script-node{background:var(--paper-2)}.figure-node{border-color:var(--warm)}
+    .separation-grid { flex:1; }
+    .traceability-wrap { padding:1.2vh 1vw 1.4vh; border:1px solid var(--line); background:rgba(255,255,255,.26); }
+    .trace-label { margin-bottom:1.1vh; color:var(--accent); font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.1em; }
+    .trace-row { display:flex; align-items:stretch; gap:.45vw; }
+    .trace-node { flex:1; display:flex; flex-direction:column; justify-content:center; min-width:0; min-height:11vh; padding:.75vh .55vw; border:1px solid var(--line); background:rgba(255,255,255,.45); color:var(--navy); text-align:center; font-weight:600; line-height:1.2; }
+    .trace-node span { margin-bottom:.45vh; color:var(--accent); font:500 15px Georgia,serif; }
+    .reverse-note { margin-top:1.1vh; padding-top:.8vh; border-top:1px solid var(--line); color:var(--muted); text-align:center; }
+    .benchmark-row { flex:1; display:grid; grid-template-columns:.45fr 2.2fr; gap:1.4vw; align-items:center; padding:2vh 2vw; background:var(--navy); color:white; }
+    .benchmark-number { color:#a9d5d1; font:500 clamp(22px,2vw,31px) Georgia,serif; }
+    .benchmark-row b { font:500 clamp(20px,1.85vw,29px)/1.2 Georgia,serif; }
+    .benchmark-row p { color:#dce7e7; }
+    .manual-flow .flow-node { min-height:9vh; }
+    .manual-layout { flex:1; }
+    .repeatability-top { display:grid; grid-template-columns:1.2fr 1fr; gap:1.4vw; align-items:center; }
+    .variation-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:.7vh .7vw; }
+    .responsibility-banner { padding:1.1vh 1.1vw; border-left:5px solid var(--warm); background:rgba(155,91,64,.09); color:var(--navy); font-weight:600; text-align:center; }
+    .run-grid,.three-standard-grid { flex:1; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1.35vw; }
+    .run-grid .panel,.standard-card { border-top:5px solid var(--accent); }
+    .standard-icon { color:var(--accent); font:500 26px Georgia,serif; }
+    .verification-strip { display:flex; align-items:center; justify-content:center; gap:1.1vw; padding:.85vh 1vw; border:1px solid var(--line); background:rgba(255,255,255,.25); font-size:clamp(9.5px,.75vw,11.5px); }
+    .verification-strip b { color:var(--accent); }.verification-strip span{padding-left:1vw;border-left:1px solid var(--line)}
+    .final-standard { padding:1.15vh 1.3vw; background:var(--navy); color:white; text-align:center; font:500 clamp(14px,1.2vw,18px)/1.3 Georgia,serif; }
+    mjx-container[display="true"] { break-inside:avoid; margin:.3vh 0 !important; }
+    footer { flex:0 0 auto; display:flex; justify-content:space-between; border-top:1px solid var(--line); padding-top:.75vh; color:#7a756f; font-size:clamp(8px,.72vw,11px); text-transform:uppercase; letter-spacing:.12em; }
+    .controls { position:fixed; left:1.1vw; bottom:1.2vh; z-index:30; display:flex; gap:8px; }
+    button { width:36px; height:36px; border:1px solid var(--line); background:rgba(237,232,224,.92); color:var(--navy); font-size:18px; cursor:pointer; }
+    button:hover { background:var(--navy); color:white; }
+    .progress { position:fixed; left:0; right:0; bottom:0; height:4px; z-index:40; background:rgba(184,176,164,.45); }
+    .progress > div { height:100%; width:5%; background:var(--accent); transition:width .25s ease; }
+    @media (max-aspect-ratio:4/3) { .slide-body.columns { column-gap:2.6vw; } h1 { font-size:2.55vw; } }
+    @media print {
+      @page { size:13.333in 7.5in; margin:0; }
+      html,body { overflow:visible; background:white; }
+      .presentation { width:auto; height:auto; }
+      .slide { position:relative; display:flex !important; flex-direction:column; width:13.333in; height:7.5in; page-break-after:always; }
+      .controls,.progress { display:none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="presentation">
+    <section class="slide active" data-slide="1">
+      <div class="axis axis-x"></div><div class="axis axis-y"></div>
+      <header>
+        <div class="eyebrow">Rigorous Experimental Practice · Mechatronics / Robotics</div>
+        <h1>Experimental Architecture: Define the System Before Running It</h1>
+      </header>
+      <main class="slide-body designed">
+        <div class="flow-row hero-flow"><div class="flow-node"><b>Inputs / actuation</b><small>commands · stimuli</small></div><div class="flow-arrow">→</div><div class="flow-node"><b>Physical system</b><small>state · parameters · environment</small></div><div class="flow-arrow">→</div><div class="flow-node"><b>Measured outputs</b><small>responses · timing · evidence</small></div></div>
+        <div class="grid-2 architecture-grid">
+          <section class="panel "><div class="panel-title">Define the experimental variables</div><ul class="compact-list"><li>Controlled variables</li><li>Independent variables</li><li>Dependent variables</li><li>Disturbance variables</li><li>Environmental parameters</li><li>Acquisition channels</li><li>Timing relationships</li></ul></section>
+          <section class="panel "><div class="panel-title">Mechatronic system model</div><div class="math-block ">\[\mathbf{u}(t) \rightarrow \mathcal{S}(\mathbf{x},\theta,\mathbf{e}) \rightarrow \mathbf{y}(t)\]</div><div class="definition-grid"><span><b>u(t)</b> actuator inputs</span><span><b>x</b> system state</span><span><b>θ</b> system parameters</span><span><b>e</b> environment</span><span><b>y(t)</b> measured outputs</span></div></section>
+        </div>
+        <div class="takeaway">Before running the experiment, define what is controlled, varied, measured, synchronized and potentially confounding.</div></main>
+      <footer><span>PhD laboratory training</span><span>01 / 20</span></footer>
+    </section>
+
+    <section class="slide " data-slide="2">
+      <div class="axis axis-x"></div><div class="axis axis-y"></div>
+      <header>
+        <div class="eyebrow">Rigorous Experimental Practice · Mechatronics / Robotics</div>
+        <h1>Experimental Design: Control, Vary, Measure, Monitor</h1>
+      </header>
+      <main class="slide-body designed">
+        <table class="designed-table"><thead><tr><th>Category</th><th>Meaning</th><th>Example</th></tr></thead><tbody>
+          <tr><td><b>Control variable</b></td><td>Held constant</td><td>Probe position, geometry</td></tr>
+          <tr><td><b>Independent variable</b></td><td>Intentionally varied</td><td>Current amplitude, frequency</td></tr>
+          <tr><td><b>Dependent variable</b></td><td>Measured response</td><td>Force, displacement</td></tr>
+          <tr><td><b>Disturbance / confounder</b></td><td>Not intentionally varied but may affect the result</td><td>Temperature, drift</td></tr>
+          <tr><td><b>Metadata</b></td><td>Required for reconstruction</td><td>Sample ID, calibration, setup version</td></tr>
+        </tbody></table>
+        <div class="grid-2 lower-panels">
+          <section class="panel accent-panel"><div class="panel-title">Technical principle</div><p>Every relevant parameter must either be <b>controlled</b> or <b>accurately monitored</b>, so the actual condition can be reconstructed and incorporated into later analysis.</p></section>
+          <section class="panel "><div class="panel-title">Operational rule</div><p><b>Control critical variables; measure relevant disturbances; document the rest.</b></p><p>No influential parameter should remain unknown.</p></section>
+        </div></main>
+      <footer><span>PhD laboratory training</span><span>02 / 20</span></footer>
+    </section>
+
+    <section class="slide " data-slide="3">
+      <div class="axis axis-x"></div><div class="axis axis-y"></div>
+      <header>
+        <div class="eyebrow">Rigorous Experimental Practice · Mechatronics / Robotics</div>
+        <h1>Measurement Planning and Observability</h1>
+      </header>
+      <main class="slide-body designed">
+        <div class="grid-2 full-height-grid">
+          <section class="panel "><div class="panel-title">Observability questions</div><ul class="question-list"><li>Is every relevant state directly measured?</li><li>If not, can it be inferred reliably?</li><li>Is sensor bandwidth sufficient?</li><li>Is sampling rate sufficient?</li><li>Is the sensor range appropriate?</li><li>What signal-to-noise ratio is expected?</li><li>What is measured directly versus inferred?</li></ul></section>
+          <section class="panel spec-panel"><div class="panel-title">Specify every sensor</div><div class="spec-grid"><div>Range</div><div>Resolution</div><div>Bandwidth</div><div>Accuracy</div><div>Sampling rate</div></div><div class="math-block ">\[\{R,\;\Delta R,\;BW,\;u,\;f_s\}\]</div><div class="mini-callout">Nominal range alone is insufficient. Evaluate the complete measurement specification and the inference it must support.</div></section>
+        </div></main>
+      <footer><span>PhD laboratory training</span><span>03 / 20</span></footer>
+    </section>
+
+    <section class="slide " data-slide="4">
+      <div class="axis axis-x"></div><div class="axis axis-y"></div>
+      <header>
+        <div class="eyebrow">Rigorous Experimental Practice · Mechatronics / Robotics</div>
+        <h1>Experimental Protocol and State Sequence</h1>
+      </header>
+      <main class="slide-body designed">
+        <div class="flow-row state-flow"><div class="flow-node">INIT</div><div class="flow-arrow">→</div><div class="flow-node">ZERO</div><div class="flow-arrow">→</div><div class="flow-node">READY</div><div class="flow-arrow">→</div><div class="flow-node">ACQUIRE</div><div class="flow-arrow">→</div><div class="flow-node">STIMULATE</div><div class="flow-arrow">→</div><div class="flow-node">RETURN</div><div class="flow-arrow">→</div><div class="flow-node">SAVE</div></div>
+        <div class="protocol-grid"><div class="protocol-step"><span>01</span>Initialize hardware</div><div class="protocol-step"><span>02</span>Load calibration parameters</div><div class="protocol-step"><span>03</span>Zero sensors</div><div class="protocol-step"><span>04</span>Move to initial configuration</div><div class="protocol-step"><span>05</span>Start acquisition</div><div class="protocol-step"><span>06</span>Apply stimulus</div><div class="protocol-step"><span>07</span>Hold / sweep / cycle</div><div class="protocol-step"><span>08</span>Stop stimulus</div><div class="protocol-step"><span>09</span>Return to reference</div><div class="protocol-step"><span>10</span>Save data + metadata</div><div class="protocol-step"><span>11</span>Verify file integrity</div></div>
+        <div class="takeaway">If the protocol cannot be described precisely as states, actions and exit conditions, repeatability will be poor.</div></main>
+      <footer><span>PhD laboratory training</span><span>04 / 20</span></footer>
+    </section>
+
+    <section class="slide " data-slide="5">
+      <div class="axis axis-x"></div><div class="axis axis-y"></div>
+      <header>
+        <div class="eyebrow">Rigorous Experimental Practice · Mechatronics / Robotics</div>
+        <h1>Automation and Parameter Sweeps</h1>
+      </header>
+      <main class="slide-body designed">
+        <div class="parameter-strip"><div><span>Current</span><div class="math-block compact-equation">\[I=[0.5,1.0,1.5,2.0]\;\mathrm{A}\]</div></div><div><span>Frequency</span><div class="math-block compact-equation">\[f=[1,5,10,20]\;\mathrm{Hz}\]</div></div><div><span>Spatial map</span><div class="math-block compact-equation">\[(x_i,y_j)\rightarrow B(x_i,y_j)\]</div></div></div>
+        <div class="grid-2 code-layout">
+          <pre class="code-panel"><code>for i = 1:length(current_list)
+    setCurrent(current_list(i));
+    executeTrajectory();
+    acquireData();
+    saveCondition();
+end</code></pre>
+          <section class="panel "><div class="panel-title">Why encode parameter variation</div><ul class="compact-list"><li>Identical trajectories</li><li>Identical timing</li><li>Reduced operator variability</li><li>Easier repetition</li><li>Direct comparison across conditions</li><li>Scalable parameter exploration</li></ul></section>
+        </div>
+        <div class="takeaway">Spatial mapping should follow a defined coordinate grid or trajectory—not manual repositioning between conditions.</div></main>
+      <footer><span>PhD laboratory training</span><span>05 / 20</span></footer>
+    </section>
+
+    <section class="slide " data-slide="6">
+      <div class="axis axis-x"></div><div class="axis axis-y"></div>
+      <header>
+        <div class="eyebrow">Rigorous Experimental Practice · Mechatronics / Robotics</div>
+        <h1>Reproducibility Requires a Defined Setup</h1>
+      </header>
+      <main class="slide-body designed">
+        <div class="grid-2 reproducibility-pair">
+          <section class="panel repro-card"><div class="panel-title">Protocol reproducibility</div><div class="big-statement">Same command sequence</div><p>Identical initialization, timing, stimulus, acquisition and reset logic.</p></section>
+          <section class="panel repro-card"><div class="panel-title">Physical reproducibility</div><div class="big-statement">Same physical configuration</div><p>Identical geometry, boundaries, calibration state and environmental conditions.</p></section>
+        </div>
+        <div class="metadata-grid"><div>Sensor position</div><div>Actuator geometry</div><div>Sample geometry</div><div>Reference coordinates</div><div>Calibration state</div><div>Fixture stiffness</div><div>Preload</div><div>Cable routing</div><div>Power-supply configuration</div><div>Software/controller version</div><div>Environmental conditions</div></div>
+        <div class="takeaway">Both forms of reproducibility are required; control code alone cannot reproduce a physical experiment.</div></main>
+      <footer><span>PhD laboratory training</span><span>06 / 20</span></footer>
+    </section>
+
+    <section class="slide " data-slide="7">
+      <div class="axis axis-x"></div><div class="axis axis-y"></div>
+      <header>
+        <div class="eyebrow">Rigorous Experimental Practice · Mechatronics / Robotics</div>
+        <h1>DAQ-Centered Acquisition Architecture</h1>
+      </header>
+      <main class="slide-body designed">
+        <div class="daq-layout">
+          <div class="channel-stack"><div class="channel"><span>Force sensor</span><b>AI0</b></div><div class="channel"><span>Displacement</span><b>AI1</b></div><div class="channel"><span>Current sensor</span><b>AI2</b></div><div class="channel"><span>Voltage monitor</span><b>AI3</b></div><div class="channel"><span>Actuator command</span><b>AO0</b></div><div class="channel"><span>Trigger / sync</span><b>DIO / Counter</b></div></div>
+          <div class="daq-arrow">→</div><div class="daq-core"><b>NI DAQ</b><span>shared sampling clock</span></div><div class="daq-arrow">→</div><div class="daq-core matlab"><b>MATLAB</b><span>NI-DAQmx acquisition</span></div>
+        </div>
+        <div class="grid-2 lower-panels">
+          <section class="panel "><div class="panel-title">Why centralize acquisition</div><ul class="compact-list"><li>Deterministic relative timing</li><li>Simultaneous or multiplexed acquisition</li><li>Common timestamp reference</li><li>Synchronized actuation and measurement</li><li>Direct MATLAB / NI-DAQmx interface</li></ul></section>
+          <section class="panel accent-panel"><div class="panel-title">Sensor-selection principle</div><p>Prefer conditioned analogue outputs that can be acquired directly by the DAQ.</p><div class="io-chips"><span>±10 V</span><span>0–5 V</span><span>4–20 mA</span></div><p class="small-note">Independent USB, serial, CAN or proprietary readers introduce separate clocks, buffering and latency that complicate multi-sensor synchronization.</p></section>
+        </div></main>
+      <footer><span>PhD laboratory training</span><span>07 / 20</span></footer>
+    </section>
+
+    <section class="slide " data-slide="8">
+      <div class="axis axis-x"></div><div class="axis axis-y"></div>
+      <header>
+        <div class="eyebrow">Rigorous Experimental Practice · Mechatronics / Robotics</div>
+        <h1>Sampling Rate, Bandwidth, and Aliasing</h1>
+      </header>
+      <main class="slide-body designed">
+        <div class="flow-row measurement-flow"><div class="flow-node">Physical signal<br><small>expected bandwidth</small></div><div class="flow-arrow">→</div><div class="flow-node">Sensor<br><small>mechanical bandwidth</small></div><div class="flow-arrow">→</div><div class="flow-node">Analogue filter<br><small>anti-alias cutoff</small></div><div class="flow-arrow">→</div><div class="flow-node">DAQ<br><small>sample rate</small></div><div class="flow-arrow">→</div><div class="flow-node">Digital record<br><small>valid bandwidth</small></div></div>
+        <div class="grid-2 equation-layout">
+          <section class="panel "><div class="panel-title">Sampling conditions</div><div class="math-block ">\[f_s>2f_{\max}\]</div><div class="math-block ">\[f_s\gg2f_{\max}\]</div><p>Nyquist is necessary, but practical measurements require margin and an appropriate analogue front end.</p></section>
+          <section class="panel "><div class="panel-title">Quantities that must be specified</div><ul class="compact-list"><li>Sensor bandwidth</li><li>DAQ sampling frequency</li><li>Expected signal bandwidth</li><li>Anti-alias filter cutoff</li><li>Actuator switching frequencies</li></ul></section>
+        </div>
+        <div class="warning">At <b>f<sub>s</sub> = 1000 Hz</b>, content above 500 Hz can alias unless filtered. This is especially important for PWM-driven actuators.</div></main>
+      <footer><span>PhD laboratory training</span><span>08 / 20</span></footer>
+    </section>
+
+    <section class="slide " data-slide="9">
+      <div class="axis axis-x"></div><div class="axis axis-y"></div>
+      <header>
+        <div class="eyebrow">Rigorous Experimental Practice · Mechatronics / Robotics</div>
+        <h1>Synchronization Across Multiple Devices</h1>
+      </header>
+      <main class="slide-body designed">
+        <div class="flow-row sync-flow"><div class="flow-node">DAQ-connected sensors</div><div class="flow-arrow">→</div><div class="flow-node">Shared physical event</div><div class="flow-arrow">→</div><div class="flow-node">External device / camera</div></div>
+        <div class="grid-2 sync-layout">
+          <section class="panel "><div class="panel-title">Map every device to DAQ time</div><div class="math-block ">\[t_{\mathrm{external}}\rightarrow t_{\mathrm{DAQ}}\]</div><div class="math-block ">\[t_{\mathrm{camera}}=a\,t_{\mathrm{DAQ}}+b\]</div><div class="definition-grid"><span><b>b</b> start offset</span><span><b>a</b> relative clock drift</span></div><p>One marker estimates <b>b</b>; two markers estimate both <b>a</b> and <b>b</b>.</p></section>
+          <section class="panel "><div class="panel-title">Choose accuracy from the process timescale</div><ul class="compact-list"><li>Camera: typically 60–120 fps</li><li>DAQ: typically ~1 kHz</li><li>Start synchronization may be sufficient for short, slow recordings</li><li>Hardware trigger is preferred when timing error matters</li><li>Optical flash is a practical shared event</li><li>A second marker quantifies long-duration drift</li></ul></section>
+        </div>
+        <div class="takeaway">First determine whether the timing mismatch changes the scientific result; then select the synchronization method and accuracy.</div></main>
+      <footer><span>PhD laboratory training</span><span>09 / 20</span></footer>
+    </section>
+
+    <section class="slide " data-slide="10">
+      <div class="axis axis-x"></div><div class="axis axis-y"></div>
+      <header>
+        <div class="eyebrow">Rigorous Experimental Practice · Mechatronics / Robotics</div>
+        <h1>Camera–DAQ Synchronization Implementation</h1>
+      </header>
+      <main class="slide-body designed">
+        <div class="grid-2 trigger-grid">
+          <section class="panel method-card"><div class="panel-title">Hardware trigger</div><div class="flow-row inner-flow"><div class="flow-node">DAQ counter / DIO</div><div class="flow-arrow">→</div><div class="flow-node">Trigger pulse</div><div class="flow-arrow">→</div><div class="flow-node">Camera input</div></div><p>Record the same pulse in the DAQ acquisition. The camera then free-runs at its configured frame rate.</p></section>
+          <section class="panel method-card"><div class="panel-title">Optical synchronization</div><div class="flow-row inner-flow"><div class="flow-node">DAQ output</div><div class="flow-arrow">→</div><div class="flow-node">LED flash</div><div class="flow-arrow">→</div><div class="flow-node">Visible video frame</div></div><p>The DAQ records the electrical pulse while the camera records the corresponding optical event.</p></section>
+        </div>
+        <div class="drift-panel"><div><div class="panel-title">Frame alignment</div><div class="math-block compact-equation">\[\mathrm{frame}\;n_0\leftrightarrow t_0\]</div></div><div><div class="panel-title">Long-record drift correction</div><div class="math-block compact-equation">\[(t_{\mathrm{cam},0},t_{\mathrm{DAQ},0}),\;(t_{\mathrm{cam},1},t_{\mathrm{DAQ},1})\]</div></div><p>Two shared events permit linear offset-and-drift correction.</p></div></main>
+      <footer><span>PhD laboratory training</span><span>10 / 20</span></footer>
+    </section>
+
+    <section class="slide " data-slide="11">
+      <div class="axis axis-x"></div><div class="axis axis-y"></div>
+      <header>
+        <div class="eyebrow">Rigorous Experimental Practice · Mechatronics / Robotics</div>
+        <h1>Raw Data Is Immutable</h1>
+      </header>
+      <main class="slide-body designed">
+        <div class="raw-definition"><b>Raw data</b><span>Direct acquisition output before calibration, filtering, smoothing, cropping, rejection, averaging or manual modification.</span></div>
+        <div class="flow-row raw-flow"><div class="flow-node"><b class="lock">🔒 20260901_test03_raw.mat</b><small>authoritative instrument record</small></div><div class="flow-arrow">→</div><div class="flow-node">process_data.m</div><div class="flow-arrow">→</div><div class="flow-node">test03_processed.mat</div></div>
+        <div class="grid-2 lower-panels">
+          <section class="panel "><div class="panel-title">Raw file contents</div><ul class="compact-list"><li>Sampled channels</li><li>Time vector</li><li>Sampling frequency</li><li>Acquisition configuration</li><li>Trigger information</li><li>Experimental parameters when available</li></ul></section>
+          <section class="panel accent-panel"><div class="panel-title">Integrity rule</div><div class="big-statement">Do not overwrite.</div><p>All calibration and transformation must occur in separate scripts and derived files.</p><p>The raw dataset is the authoritative record of what the instrument measured.</p></section>
+        </div></main>
+      <footer><span>PhD laboratory training</span><span>11 / 20</span></footer>
+    </section>
+
+    <section class="slide " data-slide="12">
+      <div class="axis axis-x"></div><div class="axis axis-y"></div>
+      <header>
+        <div class="eyebrow">Rigorous Experimental Practice · Mechatronics / Robotics</div>
+        <h1>Separate Processing from Acquisition</h1>
+      </header>
+      <main class="slide-body designed">
+        <div class="grid-2 processing-layout">
+          <pre class="code-panel tall"><code>raw = load('test03_raw.mat');
+
+force = raw.forceVoltage * forceCalibration;
+position = raw.displacementVoltage * ...
+           displacementCalibration;
+
+force = force - mean(force(1:1000));
+force_f = lowpass(force,20,raw.fs);
+
+save('test03_processed.mat', ...
+     'force_f','position');</code></pre>
+          <div class="parameter-column">
+            <section class="panel "><div class="panel-title">Parameters must be explicit</div><div class="parameter-line"><b>forceCalibration</b><span>50.2 N/V</span></div><div class="parameter-line"><b>fc</b><span>20 Hz</span></div><div class="parameter-line"><b>zeroWindow</b><span>1:1000</span></div></section>
+            <section class="panel "><div class="panel-title">Deterministic pipeline</div><ul class="compact-list"><li>Read raw data without modifying it</li><li>Apply calibration and unit conversion in code</li><li>Record offset and filtering parameters</li><li>Save derived results to a new file</li></ul></section>
+          </div>
+        </div>
+        <div class="takeaway">The script—not personal memory—must contain everything required to reconstruct the processed result.</div></main>
+      <footer><span>PhD laboratory training</span><span>12 / 20</span></footer>
+    </section>
+
+    <section class="slide " data-slide="13">
+      <div class="axis axis-x"></div><div class="axis axis-y"></div>
+      <header>
+        <div class="eyebrow">Rigorous Experimental Practice · Mechatronics / Robotics</div>
+        <h1>Data Processing Should Be Auditable</h1>
+      </header>
+      <main class="slide-body designed">
+        <div class="audit-text-panel">
+          <div class="panel-title">Every transformation should answer</div>
+          <div class="audit-text-list">
+            <ul class="compact-list"><li>What operation was applied?</li><li>Why was it applied?</li><li>What parameter was used?</li><li>Was it applied before or after calibration?</li></ul>
+            <ul class="compact-list"><li>Was any data rejected?</li><li>How were outliers treated?</li><li>Was the operation causal or non-causal?</li><li>Does it affect amplitude or phase?</li></ul>
+          </div>
+        </div>
+        <div class="comparison-strip"><div><span class="bad">Insufficient</span><b>“I smoothed the curve.”</b></div><div class="comparison-arrow">→</div><div><span class="good">Auditable specification</span><b>4th-order zero-phase Butterworth low-pass filter, f<sub>c</sub> = 20 Hz</b></div></div>
+        <div class="takeaway">Every scientific transformation requires an operation, rationale, parameter value, order of application and documented consequence.</div></main>
+      <footer><span>PhD laboratory training</span><span>13 / 20</span></footer>
+    </section>
+
+    <section class="slide " data-slide="14">
+      <div class="axis axis-x"></div><div class="axis axis-y"></div>
+      <header>
+        <div class="eyebrow">Rigorous Experimental Practice · Mechatronics / Robotics</div>
+        <h1>Separate Processing from Visualization</h1>
+      </header>
+      <main class="slide-body designed">
+        <div class="file-pipeline">
+          <div class="file-node locked"><span>🔒</span><b>raw.mat</b><small>immutable acquisition record</small></div><div class="file-arrow">→</div>
+          <div class="script-node"><span>MATLAB</span><b>process.m</b><small>scientific transformations</small></div><div class="file-arrow">→</div>
+          <div class="file-node"><span>DATA</span><b>processed.mat</b><small>derived values</small></div><div class="file-arrow">→</div>
+          <div class="script-node"><span>MATLAB</span><b>plot_force.m</b><small>selection + styling only</small></div><div class="file-arrow">→</div>
+          <div class="file-node figure-node"><span>FIG</span><b>Figure</b><small>regenerated output</small></div>
+        </div>
+        <div class="grid-2 separation-grid">
+          <section class="panel "><div class="panel-title">Processing layer — changes scientific values</div><ul class="compact-list"><li>Calibration and unit conversion</li><li>Offset correction and synchronization</li><li>Filtering, averaging and fitting</li><li>Feature extraction and uncertainty</li></ul></section>
+          <section class="panel "><div class="panel-title">Visualization layer — changes presentation only</div><ul class="compact-list"><li>Line and dataset selection</li><li>Normalization and axis range</li><li>Labels, colors and panel arrangement</li><li>Error bands and legend</li></ul></section>
+        </div>
+        <div class="takeaway">The files remain separate and traceable. Figure code must not hide scientific transformations.</div></main>
+      <footer><span>PhD laboratory training</span><span>14 / 20</span></footer>
+    </section>
+
+    <section class="slide " data-slide="15">
+      <div class="axis axis-x"></div><div class="axis axis-y"></div>
+      <header>
+        <div class="eyebrow">Rigorous Experimental Practice · Mechatronics / Robotics</div>
+        <h1>Traceability of a Published Result</h1>
+      </header>
+      <main class="slide-body designed">
+        <div class="traceability-wrap">
+          <div class="trace-label">Complete traceability chain</div>
+          <div class="trace-row"><div class="trace-node"><span>01</span>Experimental protocol + setup</div><div class="trace-arrow">→</div><div class="trace-node"><span>02</span>Raw data</div><div class="trace-arrow">→</div><div class="trace-node"><span>03</span>Processing script</div><div class="trace-arrow">→</div><div class="trace-node"><span>04</span>Processed data</div><div class="trace-arrow">→</div><div class="trace-node"><span>05</span>Visualization script</div><div class="trace-arrow">→</div><div class="trace-node"><span>06</span>Figure</div></div>
+          <div class="reverse-note">Reconstruction must also work in reverse: figure → settings → transformations → raw evidence → physical experiment.</div>
+        </div>
+        <div class="benchmark-row"><div class="benchmark-number">Benchmark</div><div><b>Delete the final figure and regenerate it from the raw data.</b><p>If this is difficult—or requires undocumented manual steps—the workflow is insufficiently reproducible.</p></div></div></main>
+      <footer><span>PhD laboratory training</span><span>15 / 20</span></footer>
+    </section>
+
+    <section class="slide " data-slide="16">
+      <div class="axis axis-x"></div><div class="axis axis-y"></div>
+      <header>
+        <div class="eyebrow">Rigorous Experimental Practice · Mechatronics / Robotics</div>
+        <h1>Manual Measurements and Experimental Notes</h1>
+      </header>
+      <main class="slide-body designed">
+        <div class="flow-row manual-flow"><div class="flow-node"><b>Handwrite</b><small>value · unit · IDs</small></div><div class="flow-arrow">→</div><div class="flow-node"><b>Photo / scan</b><small>immutable raw record</small></div><div class="flow-arrow">→</div><div class="flow-node"><b>Transcribe</b><small>electronic table / OCR</small></div><div class="flow-arrow">→</div><div class="flow-node"><b>Verify</b><small>against original image</small></div></div>
+        <div class="grid-2 manual-layout">
+          <section class="panel "><div class="panel-title">Measurements outside the DAQ</div><ul class="compact-list"><li>Balance reading</li><li>Caliper measurement</li><li>Sample dimensions</li><li>Standalone temperature display</li><li>Unexpected sample behaviour</li><li>Hardware change</li></ul></section>
+          <section class="panel "><div class="panel-title">The physical record must include</div><ul class="compact-list"><li>Measured value and unit</li><li>Experiment and sample ID</li><li>Relevant condition or configuration</li><li>Date, time and operator when required</li><li>Immediate photograph or scan</li><li>Notes saved with the dataset</li></ul></section>
+        </div>
+        <div class="warning">The photographed handwritten page is the raw measurement. The spreadsheet is a transcription and must be checked against the original.</div></main>
+      <footer><span>PhD laboratory training</span><span>16 / 20</span></footer>
+    </section>
+
+    <section class="slide " data-slide="17">
+      <div class="axis axis-x"></div><div class="axis axis-y"></div>
+      <header>
+        <div class="eyebrow">Rigorous Experimental Practice · Mechatronics / Robotics</div>
+        <h1>Preliminary vs Quantitative Experiments</h1>
+      </header>
+      <main class="slide-body designed">
+        <p class="stage-intro">Experimental rigor should increase with the maturity and scientific purpose of the experiment.</p>
+        <div class="stages-grid">
+          <article class="stage-card stage-explore"><div class="stage-number">01</div><h2>Exploratory experiment</h2><div class="question-label">Guiding question</div><div class="question-text">Does the phenomenon exist?</div><p class="stage-summary">A rapid, flexible test used to establish whether an effect is present and worth investigating systematically.</p><div class="stage-bottom">Quick assembly · qualitative observation · discovery of obvious failure modes</div></article>
+          <article class="stage-card stage-quantitative"><div class="stage-number">02</div><h2>Quantitative experiment</h2><div class="question-label">Guiding question</div><div class="question-text">How does output <span class="math-inline">&#92;(Y&#92;)</span> depend on parameter <span class="math-inline">&#92;(X&#92;)</span>?</div><div class="requirements-label">Required foundation</div><ul class="compact-list"><li>Calibrated sensors</li><li>Controlled protocol</li><li>Repeatability</li><li>Synchronization</li><li>Raw-data preservation</li><li>Systematic processing</li></ul></article>
+          <article class="stage-card stage-publication"><div class="stage-number">03</div><h2>Publication-ready experiment</h2><div class="question-label">Guiding question</div><div class="question-text">Can the result support a defensible scientific claim?</div><div class="requirements-label">All quantitative requirements, plus</div><ul class="compact-list"><li>Uncertainty assessment</li><li>Replicate strategy</li><li>Traceable analysis</li><li>Complete metadata</li><li>Independent validation</li></ul></article>
+        </div><p class="stage-conclusion">The required rigor increases as the work progresses from exploration to quantitative inference and publication.</p></main>
+      <footer><span>PhD laboratory training</span><span>17 / 20</span></footer>
+    </section>
+
+    <section class="slide " data-slide="18">
+      <div class="axis axis-x"></div><div class="axis axis-y"></div>
+      <header>
+        <div class="eyebrow">Rigorous Experimental Practice · Mechatronics / Robotics</div>
+        <h1>Experimental Validation and Repeatability</h1>
+      </header>
+      <main class="slide-body designed">
+        <div class="repeatability-top"><div><div class="math-block ">\[x_1(t),\;x_2(t),\;\ldots,\;x_n(t)\]</div></div><div class="big-statement">Repeat first. Interpret second.</div></div>
+        <div class="variation-grid"><div>Cycle-to-cycle variability</div><div>Run-to-run variability</div><div>Drift</div><div>Hysteresis</div><div>Warm-up effects</div><div>Zero drift</div><div>Sensor repeatability</div></div>
+        <div class="grid-2 lower-panels">
+          <section class="panel "><div class="panel-title">If repetitions disagree</div><ul class="compact-list"><li>Do not immediately average</li><li>Identify whether variation is random or structured</li><li>Check correlation with time, temperature and trial order</li><li>Inspect repositioning, warm-up and sensor drift</li></ul></section>
+          <section class="panel accent-panel"><div class="panel-title">Decision</div><p>Significant repeat-to-repeat differences must be understood before comparing parameter conditions.</p><div class="mini-callout">A non-repeatable trend is not yet a reliable experimental fact.</div></section>
+        </div></main>
+      <footer><span>PhD laboratory training</span><span>18 / 20</span></footer>
+    </section>
+
+    <section class="slide " data-slide="19">
+      <div class="axis axis-x"></div><div class="axis axis-y"></div>
+      <header>
+        <div class="eyebrow">Rigorous Experimental Practice · Mechatronics / Robotics</div>
+        <h1>Practical Checklist Before a Publication-Quality Run</h1>
+      </header>
+      <main class="slide-body designed">
+        <div class="responsibility-banner">You are responsible for the validity of every measurement. “Factory calibrated” is not evidence that the current measurement chain is correct.</div>
+        <div class="run-grid">
+          <section class="panel "><div class="panel-title">Before acquisition</div><ul class="compact-list"><li>Calibration independently checked</li><li>Coordinate system defined</li><li>DAQ range and sample rate correct</li><li>Anti-alias filtering appropriate</li><li>Saturation and actuator limits checked</li><li>Camera synchronization validated</li><li>Environment recorded; experiment ID assigned</li></ul></section>
+          <section class="panel "><div class="panel-title">During acquisition</div><ul class="compact-list"><li>All data streams active</li><li>No clipping or saturation</li><li>Timing and trigger events correct</li><li>Commanded and actual inputs compared</li><li>Unexpected events recorded immediately</li></ul></section>
+          <section class="panel "><div class="panel-title">After acquisition</div><ul class="compact-list"><li>Raw file saved and readable</li><li>Metadata and notes saved</li><li>Quick sanity plot completed</li><li>File integrity verified</li><li>Raw file left untouched</li></ul></section>
+        </div></main>
+      <footer><span>PhD laboratory training</span><span>19 / 20</span></footer>
+    </section>
+
+    <section class="slide " data-slide="20">
+      <div class="axis axis-x"></div><div class="axis axis-y"></div>
+      <header>
+        <div class="eyebrow">Rigorous Experimental Practice · Mechatronics / Robotics</div>
+        <h1>The Standard We Want in the Lab</h1>
+      </header>
+      <main class="slide-body designed">
+        <div class="three-standard-grid">
+          <section class="panel standard-card"><div class="panel-title">Physical reproducibility</div><div class="standard-icon">01</div><div class="big-statement">Same setup and boundary conditions</div><p>Geometry, fixture, sample, calibration state and environment are reproducible.</p></section>
+          <section class="panel standard-card"><div class="panel-title">Procedural reproducibility</div><div class="standard-icon">02</div><div class="big-statement">Same protocol and control sequence</div><p>Initialization, actuation, timing, acquisition and reset are reproducible.</p></section>
+          <section class="panel standard-card"><div class="panel-title">Computational reproducibility</div><div class="standard-icon">03</div><div class="big-statement">Same raw data and scripts regenerate the result</div><p>Processed values and figures require no undocumented manual operation.</p></section>
+        </div>
+        <div class="verification-strip"><b>Independent verification:</b><span>commanded current → measured current</span><span>commanded position → measured position</span><span>controller temperature → independent thermometer</span></div>
+        <div class="final-standard">A PhD-level experiment is not complete when the apparatus runs. It is complete when the evidence chain can be independently understood, checked and reproduced.</div></main>
+      <footer><span>PhD laboratory training</span><span>20 / 20</span></footer>
+    </section></div>
+  <div class="controls"><button id="prev" aria-label="Previous slide">←</button><button id="next" aria-label="Next slide">→</button></div>
+  <div class="progress"><div id="progressBar"></div></div>
+  <script>
+    const slides=[...document.querySelectorAll('.slide')]; let current=0;
+    function show(i){ current=Math.max(0,Math.min(slides.length-1,i)); slides.forEach((s,n)=>s.classList.toggle('active',n===current)); document.getElementById('progressBar').style.width=((current+1)/slides.length*100)+'%'; history.replaceState(null,'','#slide-'+(current+1)); }
+    document.getElementById('prev').onclick=()=>show(current-1); document.getElementById('next').onclick=()=>show(current+1);
+    addEventListener('keydown',e=>{ if(['ArrowRight','PageDown',' '].includes(e.key)){e.preventDefault();show(current+1)} if(['ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();show(current-1)} if(e.key==='Home')show(0); if(e.key==='End')show(slides.length-1); });
+    let startX=null; addEventListener('touchstart',e=>startX=e.touches[0].clientX,{passive:true}); addEventListener('touchend',e=>{if(startX===null)return;const d=e.changedTouches[0].clientX-startX;if(Math.abs(d)>50)show(current+(d<0?1:-1));startX=null},{passive:true});
+    const hash=Number(location.hash.replace('#slide-','')); show(Number.isFinite(hash)&&hash>0?hash-1:0);
+  </script>
+</body>
+</html>
