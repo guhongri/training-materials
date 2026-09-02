@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Training Materials</title>
+  <style>
+    :root { --paper:#ede8e0; --ink:#183448; --muted:#59646a; --accent:#2b7774; --line:#b8b0a4; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--paper); color:var(--ink); font-family:Inter,ui-sans-serif,system-ui,sans-serif; }
+    main { max-width:1050px; margin:0 auto; padding:9vh 6vw; }
+    .label { color:var(--accent); font-size:12px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; }
+    h1 { margin:14px 0 12px; font:500 clamp(44px,7vw,82px)/1 Georgia,serif; }
+    .intro { max-width:700px; color:var(--muted); font-size:18px; line-height:1.55; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:24px; margin-top:64px; }
+    .card { display:block; min-height:260px; padding:30px; border:1px solid var(--line); color:inherit; text-decoration:none; background:rgba(255,255,255,.28); transition:.2s ease; }
+    .card:hover { transform:translateY(-4px); border-color:var(--accent); }
+    .number { color:var(--accent); font:500 28px Georgia,serif; }
+    h2 { margin:44px 0 12px; font:500 30px/1.1 Georgia,serif; }
+    .card p { color:var(--muted); line-height:1.55; }
+    .open { display:inline-block; margin-top:22px; color:var(--accent); font-weight:700; }
+    footer { margin-top:80px; padding-top:20px; border-top:1px solid var(--line); color:var(--muted); font-size:13px; }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="label">Open training resources</div>
+    <h1>Training Materials</h1>
+    <p class="intro">Technical teaching materials for graduate students working in mechatronics, robotics, instrumentation and experimental research.</p>
+    <section class="grid">
+      <a class="card" href="how-to-do-experiment/">
+        <div class="number">01</div>
+        <h2>Rigorous Experimental Practice</h2>
+        <p>A PhD-level guide to experimental architecture, protocols, DAQ-centered acquisition, synchronization, immutable raw data, auditable processing and reproducibility.</p>
+        <span class="open">Open presentation →</span>
+      </a>
+    </section>
+    <footer>Additional web-based training materials can be added to this collection over time.</footer>
+  </main>
+</body>
+</html>
